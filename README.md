@@ -140,5 +140,19 @@ Specify one of the following enforcement modes in the rule body:
 #### Autonomous veichles 
  - The environment is built on top of Apollo https://github.com/ApolloAuto/apollo. See [uDrive](https://arxiv.org/pdf/2407.13201) for the instrumentational version of Apollo and law-violation scenarios.
  - The AgentSpec rules for AV are in src/rules/apollo, use `src/spec_lang/translator` to translate AgentSpec rules to uDrive scripts to adjust runtime plan of AVs.
- 
+
+ ---
+
+ If you found AgentSpec useful, please cite:
+ ```
+@misc{wang2025agentspeccustomizableruntimeenforcement,
+      title={AgentSpec: Customizable Runtime Enforcement for Safe and Reliable LLM Agents}, 
+      author={Haoyu Wang and Christopher M. Poskitt and Jun Sun},
+      year={2025},
+      eprint={2503.18666},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2503.18666}, 
+}
+ ```
 
