@@ -1,5 +1,3 @@
-# Since the experimental LangChain APIs are no longer supported, we are migrating this code to the stable version.
-
 # AgentSpec
  
 AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agents via user-defined rules. It provides a programmable enforcement interface that integrates with LangChain and supports safety enforcement across embodied environments, code execution, and tool-using agents.
@@ -13,6 +11,17 @@ AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agen
 ```bash
 pip install -r requirement.txt
 ```
+
+A working version:
+langchain                                0.3.25
+langchain-anthropic                      1.3.0
+langchain-classic                        1.0.1
+langchain-cli                            0.0.35
+langchain-community                      0.4.1
+langchain-core                           0.3.81
+langchain-experimental                   0.4.1
+langchain-openai                         0.3.35
+langchain-text-splitters                 0.3.11
 
 ### 2. Generate the Parser (Only required if modifying the grammar)
 
