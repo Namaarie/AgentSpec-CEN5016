@@ -1,3 +1,5 @@
+# Since the experimental LangChain APIs are no longer supported, we are migrating this code to the stable version.
+
 # AgentSpec
  
 AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agents via user-defined rules. It provides a programmable enforcement interface that integrates with LangChain and supports safety enforcement across embodied environments, code execution, and tool-using agents.
