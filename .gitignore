@@ -1,3 +1,6 @@
 .aider*
 .env
 openai.sh
+__pycache__/
+*.pyc
+*.pyo
