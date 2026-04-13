@@ -31,9 +31,12 @@ def parse(program):
 class TestAgentSpecParser(unittest.TestCase):
 
     def test_grammar_examples(self):
-        base = 'rule_examples/'
+        base = os.path.join(os.path.dirname(__file__), 'rule_examples')
         for f in os.listdir(base):
-            with open(base + f,'r') as r:
+            path = os.path.join(base, f)
+            if not os.path.isfile(path):
+                continue
+            with open(path, 'r', encoding='utf-8') as r:
                 try :
                     rule = r.read()
                     parse(rule)
