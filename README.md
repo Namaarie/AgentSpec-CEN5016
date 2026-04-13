@@ -38,7 +38,6 @@ This project provides an interactive script to simplify running test configurati
 - Python available (from `.venv` if present, otherwise system `python`)
 - Dependency file exists (`requirement.txt` or `requirements.txt`)
 - Required Python modules are importable (antlr4 + langchain stack)
-- `OPENAI_API_KEY` is set when running key `1` (LangChain smoke demo)
 
 ### Numpad Key Mapping
 
