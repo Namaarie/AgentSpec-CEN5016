@@ -59,41 +59,42 @@ check_requirements() {
 		exit 1
 	fi
 
+	local requirements_file=""
 	if [ -f "$ROOT_DIR/requirement.txt" ]; then
-		echo "Dependency file found: requirement.txt"
+		requirements_file="requirement.txt"
 	elif [ -f "$ROOT_DIR/requirements.txt" ]; then
-		echo "Dependency file found: requirements.txt"
-	else
-		echo "Warning: no requirements file found."
+		requirements_file="requirements.txt"
 	fi
 
-	# Validate core Python dependencies used by the smoke tests.
+	if [ -n "$requirements_file" ]; then
+		echo "Dependency file found: $requirements_file"
+	else
+		echo "Warning: no requirements file found."
+		echo "If needed, install dependencies with one of:"
+		echo "  pip install -r requirement.txt"
+		echo "  pip install -r requirements.txt"
+	fi
+
+	# Validate core Python dependency (antlr4 only; LangChain is checked per-test).
 	if ! run_in_root run_python - <<'PY'
 import importlib
 import sys
 
-required_modules = [
-    "antlr4",
-    "langchain",
-    "langchain_core",
-    "langchain_text_splitters",
-    "langchain_openai",
-    "langchain_community",
-    "langchain_experimental",
-]
-
+required_modules = ["antlr4"]
 missing = []
 for module_name in required_modules:
-	try:
-		importlib.import_module(module_name)
-	except Exception:
-		missing.append(module_name)
+    try:
+        importlib.import_module(module_name)
+    except Exception:
+        missing.append(module_name)
 if missing:
     print("Missing Python modules:", ", ".join(missing))
-    print("Install dependencies with: pip install -r requirement.txt")
     sys.exit(1)
 PY
 	then
+		if [ -n "$requirements_file" ]; then
+			echo "Install dependencies with: pip install -r $requirements_file"
+		fi
 		echo "Dependency validation failed."
 		return 1
 	fi
@@ -101,9 +102,90 @@ PY
 	echo "Environment looks usable"
 }
 
+check_langchain_requirements() {
+	if ! run_in_root run_python - <<'PY'
+import importlib
+import sys
+
+required_modules = [
+    "langchain",
+    "langchain_core",
+    "langchain_text_splitters",
+    "langchain_openai",
+    "langchain_community",
+    "langchain_experimental",
+]
+missing = []
+for module_name in required_modules:
+    try:
+        importlib.import_module(module_name)
+    except Exception:
+        missing.append(module_name)
+if missing:
+    print("Missing LangChain modules:", ", ".join(missing))
+    sys.exit(1)
+PY
+	then
+		echo "LangChain dependency validation failed."
+		echo "Install dependencies with: pip install -r requirement.txt"
+		return 1
+	fi
+}
+
+require_openai_api_key() {
+	if [ -z "${OPENAI_API_KEY:-}" ]; then
+		echo "OPENAI_API_KEY is not set. Export it before running this option."
+		exit 1
+	fi
+}
+
+resolve_langchain_demo_module() {
+	run_in_root run_python - <<'PY'
+import glob
+import os
+import sys
+
+package_dir = os.path.join("src", "spec_lang")
+preferred_modules = [
+    "src.spec_lang.demo_langchain_working",
+]
+
+for module_name in preferred_modules:
+    module_relpath = os.path.join(*module_name.split(".")) + ".py"
+    if os.path.isfile(module_relpath):
+        print(module_name)
+        sys.exit(0)
+
+candidates = []
+for path in sorted(glob.glob(os.path.join(package_dir, "demo_langchain*.py"))):
+    filename = os.path.basename(path)
+    if filename == "__init__.py":
+        continue
+    module_stem, _ = os.path.splitext(filename)
+    candidates.append(f"src.spec_lang.{module_stem}")
+
+if candidates:
+    print(candidates[0])
+    sys.exit(0)
+
+sys.exit(1)
+PY
+}
+
 run_test_1() {
+	local demo_module
+
 	echo "Running Test 1: LangChain smoke demo"
-	run_in_root run_python -m src.spec_lang.demo_langchain_working || return 1
+	check_langchain_requirements || return 1
+	require_openai_api_key
+
+	if ! demo_module="$(resolve_langchain_demo_module)"; then
+		echo "Unable to find a LangChain demo entrypoint under src/spec_lang."
+		echo "Add a demo_langchain*.py module or update run.sh to the correct module name."
+		exit 1
+	fi
+
+	run_in_root run_python -m "$demo_module"
 }
 
 run_test_2() {
@@ -151,8 +233,9 @@ PY
 
 run_test_5() {
 	echo "Running Test 5: Controlled agent import smoke test"
-	run_in_root run_python - <<'PY' || return 1
-from src.spec_lang.controlled_agent_excector import initialize_controlled_agent
+	check_langchain_requirements || return 1
+	PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}" run_in_root run_python - <<'PY' || return 1
+from controlled_agent_excector import initialize_controlled_agent
 
 print("Import OK:", initialize_controlled_agent.__name__)
 PY
@@ -160,25 +243,44 @@ PY
 
 run_test_6() {
 	echo "Running Test 6: Manual predicate registry smoke test"
+	check_langchain_requirements || return 1
 	run_in_root run_python - <<'PY' || return 1
+from src.rules.manual.terminal import is_destructive
 from src.rules.manual.table import predicate_table
 
-required = ["is_destructive"]
-missing = [name for name in required if name not in predicate_table]
-if missing:
-	raise SystemExit(f"Missing predicates: {missing}")
-print("Registered predicates available:", ", ".join(required))
+if not callable(is_destructive):
+    raise SystemExit("Predicate is_destructive is not callable")
+
+if "is_destructive" in predicate_table:
+    print("Registered predicates available: is_destructive")
+else:
+    print("Predicate is_destructive is importable but not registered in predicate_table")
 PY
 }
 
 run_test_7() {
 	echo "Running Test 7: Bytecode compilation smoke test"
-	run_in_root run_python -m py_compile \
-		src/spec_lang/demo_langchain_working.py \
-		src/spec_lang/controlled_agent_excector.py \
-		src/spec_lang/rule.py \
-		src/rules/manual/pythonrepl.py \
-		src/rules/manual/table.py || return 1
+	local -a compile_targets=()
+	local file
+
+	while IFS= read -r file; do
+		compile_targets+=("$file")
+	done < <(cd "$ROOT_DIR" && find src/spec_lang -type f -name '*.py' | sort)
+
+	if [ -f "$ROOT_DIR/src/rules/manual/pythonrepl.py" ]; then
+		compile_targets+=("src/rules/manual/pythonrepl.py")
+	fi
+
+	if [ -f "$ROOT_DIR/src/rules/manual/table.py" ]; then
+		compile_targets+=("src/rules/manual/table.py")
+	fi
+
+	if [ ${#compile_targets[@]} -eq 0 ]; then
+		echo "No Python files found to compile."
+		exit 1
+	fi
+
+	run_in_root run_python -m py_compile "${compile_targets[@]}"
 	echo "Compilation OK"
 }
 

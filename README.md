@@ -74,8 +74,8 @@ You can also run a test directly:
 ## 🔧 Usage with LangChain
 
 ```python
-from src.spec_lang.controlled_agent_excector import initialize_controlled_agent
-from src.spec_lang.rule import Rule
+from src.controlled_agent_excector import initialize_controlled_agent
+from src.rule import Rule
 
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
@@ -88,20 +88,20 @@ def demo_langchain():
 trigger 
     PythonREPL
 check 
-  is_destructive
+    is_destructive
 enforce
     user_inspection
 end
 """
- 
-  rule = Rule.from_text(example_rule)
 
-  tool = PythonREPL()
-  agent = initialize_controlled_agent(
-    tools=[tool],
-    llm=llm,
-    rules=[rule],
-  )
+    rule = Rule.from_text(example_rule)
+
+    tool = PythonREPL()
+    agent = initialize_controlled_agent(
+        tools=[tool],
+        llm=llm,
+        rules=[rule],
+    )
 
     response = agent.invoke("Can you help delete the unimportant txt file in current directory")
     print(response)
@@ -109,8 +109,8 @@ end
 
 Notes:
 
-- `initialize_controlled_agent(...)` uses LangChain 1.x `create_agent` internally. The legacy `agent="zero-shot-react-description"` argument is accepted for compatibility but ignored.
-- `PythonREPL` is wrapped as a tool automatically, so you can pass the utility object directly.
+- `initialize_controlled_agent(...)` uses the `agent=` argument to select the agent implementation, so pass a value supported by the current AgentSpec/LangChain integration.
+- `tools=` should contain LangChain `BaseTool` instances. Utilities such as `PythonREPL` are not wrapped automatically, so wrap them as tools before passing them to `initialize_controlled_agent(...)`.
 - `user_inspection` will prompt on stdin by default. Pass `approval_callback=...` if you want to integrate approval into your own UI.
 
 ## 🔧 Customizing AgentSpec Rule
@@ -158,7 +158,7 @@ PREDICATE : ... | 'is_destructive';
 
 ```python
 from src.rules.manual.table import predicate_table
-from src.rules.manual.pythonrepl import is_destructive
+from src.rules.manual.terminal import is_destructive
 
 predicate_table['is_destructive'] = is_destructive
 ``` 
