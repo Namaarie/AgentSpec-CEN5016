@@ -179,7 +179,7 @@ run_test_1() {
 	check_langchain_requirements || return 1
 	require_openai_api_key
 
-	if ! demo_module="$(resolve_langchain_demo_module)"; then
+	if ! demo_module="$(resolve_langchain_demo_module | tr -d '\r')"; then
 		echo "Unable to find a LangChain demo entrypoint under src/spec_lang."
 		echo "Add a demo_langchain*.py module or update run.sh to the correct module name."
 		exit 1
@@ -234,8 +234,8 @@ PY
 run_test_5() {
 	echo "Running Test 5: Controlled agent import smoke test"
 	check_langchain_requirements || return 1
-	PYTHONPATH="$ROOT_DIR/src${PYTHONPATH:+:$PYTHONPATH}" run_in_root run_python - <<'PY' || return 1
-from controlled_agent_excector import initialize_controlled_agent
+	run_in_root run_python - <<'PY' || return 1
+from src.spec_lang.controlled_agent_excector import initialize_controlled_agent
 
 print("Import OK:", initialize_controlled_agent.__name__)
 PY
