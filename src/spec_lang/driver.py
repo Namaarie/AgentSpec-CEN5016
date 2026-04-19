@@ -1,15 +1,15 @@
 import sys
 from antlr4 import *
-from ExprLexer import ExprLexer
-from ExprParser import ExprParser
-from VisitorInterp import VisitorInterp
+from AgentSpecLexer import AgentSpecLexer
+from AgentSpecParser import AgentSpecParser
 
 def main(argv):
     input_stream = FileStream(argv[1])
-    lexer = ExprLexer(input_stream)
+    lexer = AgentSpecLexer(input_stream)
     stream = CommonTokenStream(lexer)
-    parser = ExprParser(stream)
+    parser = AgentSpecParser(stream)
     tree = parser.start_()
+    print(tree.toStringTree(recog=parser))
 
 if __name__ == '__main__':
     main(sys.argv)
