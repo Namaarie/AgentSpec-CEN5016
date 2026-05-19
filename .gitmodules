@@ -1,0 +1,6 @@
+[submodule "benchmarks/RedCode"]
+	path = benchmarks/RedCode
+	url = https://github.com/AI-secure/RedCode.git
+[submodule "benchmarks/SafeAgentBench"]
+	path = benchmarks/SafeAgentBench
+	url = https://github.com/shengyin1224/SafeAgentBench.git
