@@ -1,8 +1,0 @@
-antlr4-python3-runtime==4.13
-langchain==0.3.30
-langchain-core==0.3.86
-langchain-text-splitters==0.3.11
-langchain-openai==0.3.35
-langchain-community==0.3.31
-langchain-experimental==0.3.4
-python-dotenv
