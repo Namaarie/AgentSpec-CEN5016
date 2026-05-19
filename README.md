@@ -15,10 +15,36 @@ pip install -r requirement.txt
 pip install -e .      # install local package (makes `src/` importable)
 ```
 
-> **Note:** If you have an OpenAI/Anthropic API key, place it in a `.env` file:
-> ```
-> OPENAI_API_KEY=sk-...
-> ```
+### 2. Configure API Keys
+
+Create a `.env` file in the project root:
+
+```bash
+OPENAI_API_KEY=sk-...
+# Optional:
+AGENTSPEC_MODEL=gpt-4o
+AGENTSPEC_TEMPERATURE=0.0
+```
+
+### 3. Verify Installation
+
+```bash
+make smoke-test
+make test              # run unit tests
+```
+
+### Quick Start: Run Evaluation
+
+```bash
+# Evaluate the code agent on all 25 risk categories
+make eval-code
+
+# Generate Table 3 results
+make eval-code-report
+
+# Generate all result tables
+make results
+```
 
 A working version:
 langchain                                0.3.30
@@ -160,6 +186,37 @@ Specify one of the following enforcement modes in the rule body:
  ---
 
  If you found AgentSpec useful, please cite:
+
+---
+
+## 📊 Pre-computed Results
+
+The repository includes pre-computed experiment results:
+
+### Code Agent (Table 3)
+Results from running the Agent against RedCode-Exec (750 scenarios) are in `expres/code/python/`. 
+Generate the table with:
+```bash
+make eval-code-report
+```
+This reads the pre-computed results — no API calls needed.
+
+### Embodied Agent (Table 4)
+Results from running the Agent against SafeAgentBench with/without AgentSpec are in `expres/embodied/`.
+Generate the table with:
+```bash
+make eval-embodied-report
+```
+
+### Expected Output
+
+Running `make results` produces:
+- `results/code_table3.md` — Table 3: Code Agent invocation/violation metrics
+- `results/embodied_table4.md` — Table 4: Embodied Agent hazard reduction
+
+---
+
+## 📚 Citation
  ```
 @misc{wang2025agentspeccustomizableruntimeenforcement,
       title={AgentSpec: Customizable Runtime Enforcement for Safe and Reliable LLM Agents}, 
