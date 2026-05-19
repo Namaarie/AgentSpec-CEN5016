@@ -6,27 +6,32 @@ AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agen
 
 ## 🚀 Getting Started
 
-### 1. Installation
+### 1. Setup Virtual Environment & Install
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirement.txt
+pip install -e .      # install local package (makes `src/` importable)
 ```
 
+> **Note:** If you have an OpenAI/Anthropic API key, place it in a `.env` file:
+> ```
+> OPENAI_API_KEY=sk-...
+> ```
+
 A working version:
-langchain                                0.3.25
-langchain-anthropic                      1.3.0
-langchain-classic                        1.0.1
-langchain-cli                            0.0.35
-langchain-community                      0.4.1
-langchain-core                           0.3.81
-langchain-experimental                   0.4.1
-langchain-openai                         0.3.35
+langchain                                0.3.30
+langchain-core                           0.3.86
 langchain-text-splitters                 0.3.11
+langchain-openai                         0.3.35
+langchain-community                      0.3.31
+langchain-experimental                   0.3.4
 
 ### 2. Generate the Parser (Only required if modifying the grammar)
 
 ```bash
-java -jar ./spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./spec_lang/AgentSpec.g4
+java -jar ./src/spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./src/spec_lang/AgentSpec.g4
 ```
 
 ---

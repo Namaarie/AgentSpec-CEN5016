@@ -1,8 +1,8 @@
 import unittest
 import os
 from antlr4 import *
-from .AgentSpecLexer import AgentSpecLexer
-from .AgentSpecParser import AgentSpecParser
+from spec_lang.AgentSpecLexer import AgentSpecLexer
+from spec_lang.AgentSpecParser import AgentSpecParser
 from antlr4.error.ErrorListener import ErrorListener
 
 class CustomErrorListener(ErrorListener): 
@@ -31,7 +31,7 @@ def parse(program):
 class TestAgentSpecParser(unittest.TestCase):
 
     def test_grammar_examples(self):
-        base = 'rule_examples/'
+        base = os.path.join(os.path.dirname(__file__), 'rule_examples/')
         for f in os.listdir(base):
             with open(base + f,'r') as r:
                 try :

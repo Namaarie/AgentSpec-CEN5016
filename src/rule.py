@@ -11,7 +11,8 @@ class RuleParser(AgentSpecListener):
     event: str
     
     def enterTriggerClause(self, ctx):
-        self.event = ctx.event().getText()
+        events = ctx.event()
+        self.event = " | ".join(e.getText() for e in events)
          
     def enterRuleClause(self, ctx):
         self.id = ctx.IDENTIFIER(). getText()
